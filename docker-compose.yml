@@ -1,0 +1,10 @@
+version: "3.8"
+
+services:
+  api:
+    container_name: lot_api
+    build: .
+    ports:
+      - 8089:8089
+    restart: unless-stopped
+      
