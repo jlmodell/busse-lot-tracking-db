@@ -13,7 +13,7 @@ conn = None
 def init():
     fp = os.path.join(os.getcwd(), "data", "busse_lots.db")
     conn = apsw.Connection(fp)
-    conn.execute("create table if not exists lots(lot text primary key, part text, expiration varchar(10))")
+    conn.execute("create table if not exists lots(lot text primary key, part text, expiration varchar(10)), on_hand int, allocated int")
 
     return conn
 
@@ -78,8 +78,7 @@ async def main():
     content = """
 <body>
     <h1>Update `Lot` Database</h1>
-    <strong>QUERY</strong>: listb lot.master with f41 # "" and f41 >= "2022-01-01" f1 f41
-    <p>Save result as `lot.list.csv` and upload it</p>
+    <strong>UPDATE.LOTS</strong> and the output is found at "C:/temp/LOTS.CSV"
     <form action="/update/" enctype="multipart/form-data" method="post">
         <input name="file" type="file">
         <input type="submit">
@@ -113,7 +112,7 @@ async def update(file: UploadFile = File(...)):
             
             if expiration:
                 try:            
-                    conn.execute("insert into lots(lot, part, expiration) values (?, ?, ?)", (lot, part, expiration))
+                    conn.execute("insert into lots(lot, part, expiration) values (?, ?, ?, ?, ?)", (lot, part, expiration, oh_qty, alloc_qty))
 
                     updates.append({
                         "lot": lot,
@@ -178,5 +177,4 @@ async def get_all_lots_api():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8089, reload=True)
-    uvicorn.run("main:app", host="0.0.0.0", port=8089, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8089, reload=True)    
