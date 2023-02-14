@@ -5,10 +5,18 @@ import os
 import apsw
 from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
 
 app = FastAPI()
 
 conn = None
+
+class Lot(BaseModel):
+    lot: str
+    part: str
+    expiration: str
+    on_hand: str
+    allocated: str
 
 def init():
     fp = os.path.join(os.getcwd(), "data", "busse_lots.db")
@@ -17,21 +25,15 @@ def init():
 
     return conn
 
-def get_all_lots():
+def get_all_lots() -> list[dict[str,str]]:
     global conn
 
-    lots = []
+    lots: list[dict[str,str]] = []
 
     cursor = conn.cursor()
     cursor.execute("select * from lots")
     for row in cursor:
-        lots.append({
-            "lot": row[0],
-            "part": row[1],
-            "expiration": row[2],
-            "on-hand": row[3],
-            "allocated": row[4],
-        })
+        lots.append(Lot(lot=row[0], part=row[1], expiration=row[2], on_hand=row[3], allocated=row[4]).dict())
 
     return lots
 
