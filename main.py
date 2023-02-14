@@ -13,7 +13,7 @@ conn = None
 def init():
     fp = os.path.join(os.getcwd(), "data", "busse_lots.db")
     conn = apsw.Connection(fp)
-    conn.execute("create table if not exists lots(lot text primary key, part text, expiration varchar(10), on_hand int, allocated int)")
+    conn.execute("create table if not exists lots(lot text primary key, part text, expiration varchar(10), on_hand text, allocated text)")
 
     return conn
 
