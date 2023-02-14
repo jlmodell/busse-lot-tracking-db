@@ -1,9 +1,10 @@
-import apsw
-import csv
 import codecs
-from fastapi import FastAPI, File, UploadFile, Form
-from fastapi.responses import HTMLResponse
+import csv
 import os
+
+import apsw
+from fastapi import FastAPI, File, Form, UploadFile
+from fastapi.responses import HTMLResponse
 
 app = FastAPI()
 
@@ -99,17 +100,16 @@ async def update(file: UploadFile = File(...)):
     for line in reader:            
         if len(line) > 1:
             lot = line[0].split("|")[0]
-            part = line[1]
+            part = line[1]            
             expiration = None
+            oh_qty = line[3]
+            alloc_qty = line[4]
             
             if "-" in line[2]:
                 _expiration = line[2]
                 month, date, _year = _expiration.split("-")
                 year = "20" + _year
                 expiration = f"{year}-{month}-{date}"
-
-            oh_qty = line[3]
-            alloc_qty = line[4]
             
             if expiration:
                 try:            
@@ -136,7 +136,7 @@ async def delete_form():
 <body>
     <h1>Delete `Lot`</h1>
     <form action="/delete/" method="post">
-        <input name="lot" type="text">
+        <input name="lot" type="number">
         <input type="submit">
     </form>
 </body>
@@ -178,4 +178,5 @@ async def get_all_lots_api():
 
 if __name__ == "__main__":
     import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8089, reload=True)
     uvicorn.run("main:app", host="0.0.0.0", port=8089, reload=True)
