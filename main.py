@@ -112,7 +112,7 @@ async def update(file: UploadFile = File(...)):
             
             if expiration:
                 try:            
-                    conn.execute("insert into lots(lot, part, expiration) values (?, ?, ?, ?, ?)", (lot, part, expiration, oh_qty, alloc_qty))
+                    conn.execute("insert into lots(lot, part, expiration, on_hand, allocated) values (?, ?, ?, ?, ?)", (lot, part, expiration, oh_qty, alloc_qty))
 
                     updates.append({
                         "lot": lot,
