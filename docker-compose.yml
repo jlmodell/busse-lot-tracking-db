@@ -4,6 +4,8 @@ services:
   api:
     container_name: lot_api
     build: .
+    volumes:
+      - ./data:/data
     ports:
       - 8089:8089
     restart: unless-stopped

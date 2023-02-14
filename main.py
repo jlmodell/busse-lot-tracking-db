@@ -3,13 +3,15 @@ import csv
 import codecs
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import HTMLResponse
+import os
 
 app = FastAPI()
 
 conn = None
 
 def init():
-    conn = apsw.Connection("busse_lots.db")
+    fp = os.path.join(os.getcwd(), "data", "busse_lots.db")
+    conn = apsw.Connection(fp)
     conn.execute("create table if not exists lots(lot text primary key, part text, expiration varchar(10))")
 
     return conn
@@ -17,10 +19,14 @@ def init():
 def get_all_lots():
     global conn
 
+    lots = []
+
     cursor = conn.cursor()
     cursor.execute("select * from lots")
     for row in cursor:
-        print(row)
+        lots.append(row)
+
+    return lots
 
 def get_lot(lot):
     global conn
@@ -96,11 +102,14 @@ async def update(file: UploadFile = File(...)):
             part = line[1]
             expiration = None
             
-            if "-" in line[-1]:
-                _expiration = line[-1]
+            if "-" in line[2]:
+                _expiration = line[2]
                 month, date, _year = _expiration.split("-")
                 year = "20" + _year
                 expiration = f"{year}-{month}-{date}"
+
+            oh_qty = line[3]
+            alloc_qty = line[4]
             
             if expiration:
                 try:            
@@ -109,7 +118,9 @@ async def update(file: UploadFile = File(...)):
                     updates.append({
                         "lot": lot,
                         "part": part,
-                        "expiration": expiration
+                        "expiration": expiration,
+                        "on-hand": oh_qty,
+                        "allocated": alloc_qty,
                     })
 
                 except apsw.ConstraintError:
@@ -155,6 +166,15 @@ async def get_by_lot(lot: str):
         return { "error": "lot not found" }
 
     return { "lot": lot_info[0], "item": lot_info[1], "expiration": lot_info[2] }
+
+@app.get("/all")
+async def get_all_lots_api():
+    try:
+        lots = get_all_lots()
+    except apsw.ConstraintError:
+        return { "error": "lots not found" }
+
+    return lots
 
 if __name__ == "__main__":
     import uvicorn
