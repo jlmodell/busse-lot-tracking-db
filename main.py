@@ -25,7 +25,13 @@ def get_all_lots():
     cursor = conn.cursor()
     cursor.execute("select * from lots")
     for row in cursor:
-        lots.append(row)
+        lots.append({
+            "lot": row[0],
+            "part": row[1],
+            "expiration": row[2],
+            "on-hand": row[3],
+            "allocated": row[4],
+        })
 
     return lots
 
